@@ -1,0 +1,1 @@
+console.log("tarsus-cli");
