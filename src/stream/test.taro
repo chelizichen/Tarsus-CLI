@@ -1,0 +1,32 @@
+struct TestParams  {
+  
+  Good              : {
+    1       id      : int;
+    2       name    : string;
+    3       price   : int;
+  };
+
+  GetGoodReq        : {
+    3       message : string;
+    1       id      : int;
+    2       basic   : string;
+  };
+
+  GetGoodRes        : {
+    1       data    : Good;
+    2       code    : int;
+    3       message : string;
+  };
+
+  GetGoodsListReq    : {
+    1       message : string;
+    2       id      : int;
+  };
+  
+  GetGoodsListRes   : {
+    1       data    : List<Good>;
+    2       code    : int;
+    3       message : string;
+  };
+};
+
