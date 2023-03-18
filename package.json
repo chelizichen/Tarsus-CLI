@@ -13,7 +13,8 @@
     "cli"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "stream:index":"node src/stream/index.js"
   },
   "author": "",
   "license": "ISC"

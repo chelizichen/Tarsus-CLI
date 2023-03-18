@@ -44,6 +44,7 @@ TarsusStream.prototype._read_struct_ = function (struct) {
   let regex = /^(\d+)\s+([\w\s]+)\s+:\s/;
   let type_regx = /\:(.*)/;
   let struct_type = types.map((item) => {
+    // console.log("item ->>",item);
     const matchs = regex.exec(item);
     const [, index, param] = matchs;
     const type = type_regx.exec(item)[1];
@@ -63,6 +64,7 @@ TarsusStream.parse = function (body) {
   let struct = TarsusStream.struct_map.get(req);
   let _data = {};
   struct.forEach((item) => {
+
     const isObject = TarsusStream.check_object_type(
       data[item.param],
       item.type
@@ -106,19 +108,40 @@ TarsusStream.check_type = function (value, type) {
   }
   return false;
 };
-
+/**
+ * @description
+ * 首先判断 Type
+ * 1、 如果为 List 但长度为空，则赋值[]
+ * 2、 判断是否为 Map ，如果是则将Map里全部赋值
+ */
 TarsusStream.check_object_type = function (data, type) {
-  let req = "";
   let match_reg = /<(.*)>/;
-
+  let req = "";
+  let T = "" // 泛型
   // 是否为复杂类型
   let is_object_type = TarsusStream.base_struct.indexOf(type) == -1;
   if (is_object_type) {
     // 是否为List 之类的
-    let is_object_type = TarsusStream.object_struct.some((item) =>
-      type.startsWith(item)
-    );
+    let is_object_type = TarsusStream.object_struct.some((item) =>{
+      return (type.startsWith(item) && !req?req=match_reg.exec(type)[1]:"") && !T?T=item:""
+    });
     if (is_object_type) {
+      if(T == "List"){
+        if(TarsusStream.base_struct.indexOf(req)>-1){
+          let is_type_available = data.every(item=>TarsusStream.check_type(item,req))
+          if(is_type_available)return data;
+          return []
+        }else{
+          let ret = data.map(el=>{
+            let body = {
+              req,
+              data:el
+            }
+            return TarsusStream.parse(body)
+          })
+          return ret
+        }
+      }
     } else {
       let body = {
         req: type,
@@ -131,7 +154,8 @@ TarsusStream.check_object_type = function (data, type) {
   return null;
 };
 
-let stream_test = new TarsusStream("./test.taro");
+
+let stream_test = new TarsusStream("src/stream/test.taro");
 
 let taro = {
   GetGoodReq: {
@@ -145,9 +169,14 @@ let taro = {
     req: "GetGoodRes",
     data: {
       data: {
+        price: 1123,
         id: 1,
         name: "测试商品",
-        price: 1123,
+        info:{
+          url  :"路径",
+          sort :"分类",
+          desc :"描述",
+        }
       },
       message: "测试",
       code: 1,
@@ -155,9 +184,66 @@ let taro = {
   },
 };
 
-const _data1 = TarsusStream.parse(taro.GetGoodReq);
-const _data2 = TarsusStream.parse(taro.GetGoodRes);
+let queryList = {
+  GetGoodsListReq: {
+    req: "GetGoodsListReq",
+    data: {
+      message: "测试",
+      ids: [1,2,3,4,5],
+    },
+  },
+  GetGoodsListRes: {
+    req: "GetGoodsListRes",
+    data: {
+      code: 1,
+      message:"ok",
+      data:[
+        {
+          price: 1123,
+          id: 1,
+          name: "测试商品",
+          info:{
+            url  :"路径",
+            sort :"分类",
+            desc :"描述",
+          }
+        },
+        {
+          price: 1123,
+          id: 1,
+          name: "测试商品",
+          info:{
+            url  :"路径",
+            sort :"分类",
+            desc :"描述",
+          }
+        },
+        {
+          price: 1123,
+          id: 1,
+          name: "测试商品",
+          info:{
+            url  :"路径",
+            sort :"分类",
+            desc :"描述",
+          }
+        }
+    ]
+    },
+  },
+};
 
-console.log(_data1);
-console.log(_data2);
 
+
+// const _data1 = TarsusStream.parse(taro.GetGoodReq);
+// const _data2 = TarsusStream.parse(taro.GetGoodRes);
+
+// console.log(_data1);
+// console.log(_data2);
+
+debugger
+// const _data3 = TarsusStream.parse(queryList.GetGoodsListReq);
+const _data4 = TarsusStream.parse(queryList.GetGoodsListRes);
+
+// console.log(_data3);
+console.log(_data4);
