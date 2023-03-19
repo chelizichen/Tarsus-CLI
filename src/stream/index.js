@@ -43,6 +43,7 @@ var TarsusStream = function (url) {
 
   this._data.pop();
 
+
   this.readStruct();
 };
 

@@ -22,6 +22,7 @@ const fs = require('fs');
 const path  = require("path");
 const { TarsusStream } = require("../src");
 
+// 解析 Taro 文件
 program
   .version("1.0.0")
   .command("link <args>")
@@ -30,8 +31,38 @@ program
     let cwd = process.cwd()
     let taro_file_path = path.resolve(cwd,args)
     new TarsusStream(taro_file_path)
-    console.log(TarsusStream.struct_map);
   });
+
+  program
+  .version("1.0.0")
+  .command("to <type> <file>")
+  .description("-- compile *.taro")
+  .action(function (type,file) {
+    let cwd = process.cwd()
+    let taro_file_path = path.resolve(cwd,file)
+    new TarsusStream(taro_file_path)
+    if(type == "ts"){
+      let StructToFile = ""
+      // 每一个 类型进行设置
+      TarsusStream.struct_map.forEach((value,key)=>{
+        StructToFile += `type ${key}= {`
+  
+        value.forEach(item=>{
+          item.type = item.type.replace("int","number")
+          if(item.type.startsWith("List")){
+            item.type = item.type.replace("List","Array")
+          }
+  
+          StructToFile += item.param + ":" + item.type + ";"
+        })
+        StructToFile += "};"
+      })
+      let toWriteFilePath = taro_file_path.replace("taro","ts")
+      fs.writeFileSync(toWriteFilePath,StructToFile)
+    }
+  });
+
+  
 
 
   program.parse(process.argv);
