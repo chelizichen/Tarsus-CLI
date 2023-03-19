@@ -7,15 +7,29 @@
     "url": "https://github.com/chelizichen/",
     "type": "git"
   },
-
+  "bin": {
+    "taro": "bin/index.js"
+  },
+  "exports": {
+    ".": {
+      "require": "./src/index.js",
+      "import": "./src/index.js"
+    }
+  },
   "keywords": [
     "tarsus",
     "cli"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "stream:index":"node src/stream/index.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC"
+  "author": "chelizichen",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "commander": "^9.4.1",
+    "fs-extra": "^11.1.0",
+    "inquirer": "^7.1.4",
+    "execa": "^6.1.0"
+  }
 }

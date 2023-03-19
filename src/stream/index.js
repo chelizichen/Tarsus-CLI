@@ -1,9 +1,26 @@
 const { readFileSync } = require("fs");
 
+/**
+ * *********************************************
+ * @link Tarsus-CLI https://github.com/chelizichen/Tarsus-CLI
+ * @author chelizichen<1347290221@qq.com>
+ * @extends TarsusFarameWork https://github.com/chelizichen/TarsusFrameWork
+ * @version 1.0.0
+ * @description {
+ *     从 *.taro 文件中直接解析对应的结构体
+ * 在参数通过Http请求传送给微服务网关时
+ * 对数据进行验证，如有错误直接返回
+ * 对缺少的参数进行默认参数设置
+ * }
+ * **********************************************
+*/
+
+
+
 var TarsusStream = function (url) {
   TarsusStream.struct_map = new Map();
-  TarsusStream.base_struct = ["int", "string"];
-  TarsusStream.object_struct = ["List"];
+  TarsusStream.base_struct = ["int", "string", "bool"];
+  TarsusStream.object_struct = ["List","Set"];
 
   this._stream = readFileSync(url, "utf-8").trim().replace(/\n|\r/g, ""); // 拿到并去除换行
 
@@ -20,12 +37,25 @@ var TarsusStream = function (url) {
     .split("};")
     .filter((v) => v)
     .map((e) => e + "}")
-    .map((e) => e.trim());
+    .map((e) => e.trim())
+    .map(e=>TarsusStream.removeComment(e))
 
   this.readStruct();
 };
 
+/**
+ * 删除注释
+ * @param {string} str 需要删除注释的字符串
+ * @returns {string} 删除注释后的字符串
+ */
+
+TarsusStream.removeComment = function(str) {
+  return str.replace(/\/\/\s*([\u4e00-\u9fa5\w]+)\s*/g, '');
+}
+
 TarsusStream.prototype.readStruct = function () {
+  console.log(this._data);
+
   this._data.forEach((el) => {
     this._read_struct_(el);
   });
@@ -64,7 +94,6 @@ TarsusStream.parse = function (body) {
   let struct = TarsusStream.struct_map.get(req);
   let _data = {};
   struct.forEach((item) => {
-
     const isObject = TarsusStream.check_object_type(
       data[item.param],
       item.type
@@ -75,8 +104,9 @@ TarsusStream.parse = function (body) {
     } else {
       // 为基础类型
       let check_type = TarsusStream.check_type(data[item.param], item.type);
-      if (check_type) {
-        _data[item.param] = data[item.param];
+      // console.log("check_type",check_type);
+      if (check_type !== undefined) {
+        _data[item.param] = check_type;
       } else {
         throw new TypeError(`${data[item.param]} is not typeof ${item.type}`);
       }
@@ -86,27 +116,43 @@ TarsusStream.parse = function (body) {
 };
 
 TarsusStream.check_type = function (value, type) {
-  if (value == undefined) {
-    return true;
-  }
-
   let is_base_type = TarsusStream.base_struct.indexOf(type) > -1;
   if (is_base_type) {
+    if (value == undefined || value == null) {
+      switch (type) {
+        case "int": {
+          return 0;
+        }
+        case "string": {
+          return "";
+        }
+        case "bool": {
+          return false;
+        }
+        default: {
+          return undefined;
+        }
+      }
+    }
     switch (type) {
       case "int": {
-        if (typeof value == "number") return true;
-        return false;
+        if (typeof value == "number") return value;
+        return undefined;
       }
       case "string": {
-        if (typeof value == "string") return true;
-        return false;
+        if (typeof value == "string") return value;
+        return undefined;
+      }
+      case "bool": {
+        if (typeof value == "boolean") return value;
+        return undefined;
       }
       default: {
-        return false;
+        return undefined;
       }
     }
   }
-  return false;
+  return undefined;
 };
 /**
  * @description
@@ -117,31 +163,43 @@ TarsusStream.check_type = function (value, type) {
 TarsusStream.check_object_type = function (data, type) {
   let match_reg = /<(.*)>/;
   let req = "";
-  let T = "" // 泛型
+  let T = ""; // 泛型
   // 是否为复杂类型
   let is_object_type = TarsusStream.base_struct.indexOf(type) == -1;
   if (is_object_type) {
     // 是否为List 之类的
-    let is_object_type = TarsusStream.object_struct.some((item) =>{
-      return (type.startsWith(item) && !req?req=match_reg.exec(type)[1]:"") && !T?T=item:""
+    let is_object_type = TarsusStream.object_struct.some((item) => {
+      return (type.startsWith(item) && !req
+        ? (req = match_reg.exec(type)[1])
+        : "") && !T
+        ? (T = item)
+        : "";
     });
     if (is_object_type) {
-      if(T == "List"){
-        if(TarsusStream.base_struct.indexOf(req)>-1){
-          let is_type_available = data.every(item=>TarsusStream.check_type(item,req))
-          if(is_type_available)return data;
-          return []
-        }else{
-          let ret = data.map(el=>{
+      if (T == "List" || T == "Set") {
+        
+        if(T == "Set"){
+          data = Array.from(new Set(data))
+        }
+
+        if (TarsusStream.base_struct.indexOf(req) > -1) {
+          let is_type_available = data.every((item) =>
+            TarsusStream.check_type(item, req)
+          );
+          if (is_type_available) return data;
+          return [];
+        } else {
+          let ret = data.map((el) => {
             let body = {
               req,
-              data:el
-            }
-            return TarsusStream.parse(body)
-          })
-          return ret
+              data: el,
+            };
+            return TarsusStream.parse(body);
+          });
+          return ret;
         }
       }
+
     } else {
       let body = {
         req: type,
@@ -155,95 +213,7 @@ TarsusStream.check_object_type = function (data, type) {
 };
 
 
-let stream_test = new TarsusStream("src/stream/test.taro");
 
-let taro = {
-  GetGoodReq: {
-    req: "GetGoodReq",
-    data: {
-      id: 1,
-      message: "测试",
-    },
-  },
-  GetGoodRes: {
-    req: "GetGoodRes",
-    data: {
-      data: {
-        price: 1123,
-        id: 1,
-        name: "测试商品",
-        info:{
-          url  :"路径",
-          sort :"分类",
-          desc :"描述",
-        }
-      },
-      message: "测试",
-      code: 1,
-    },
-  },
+module.exports = {
+  TarsusStream,
 };
-
-let queryList = {
-  GetGoodsListReq: {
-    req: "GetGoodsListReq",
-    data: {
-      message: "测试",
-      ids: [1,2,3,4,5],
-    },
-  },
-  GetGoodsListRes: {
-    req: "GetGoodsListRes",
-    data: {
-      code: 1,
-      message:"ok",
-      data:[
-        {
-          price: 1123,
-          id: 1,
-          name: "测试商品",
-          info:{
-            url  :"路径",
-            sort :"分类",
-            desc :"描述",
-          }
-        },
-        {
-          price: 1123,
-          id: 1,
-          name: "测试商品",
-          info:{
-            url  :"路径",
-            sort :"分类",
-            desc :"描述",
-          }
-        },
-        {
-          price: 1123,
-          id: 1,
-          name: "测试商品",
-          info:{
-            url  :"路径",
-            sort :"分类",
-            desc :"描述",
-          }
-        }
-    ]
-    },
-  },
-};
-
-
-
-// const _data1 = TarsusStream.parse(taro.GetGoodReq);
-// const _data2 = TarsusStream.parse(taro.GetGoodRes);
-
-// console.log(_data1);
-// console.log(_data2);
-
-debugger
-// const _data3 = TarsusStream.parse(queryList.GetGoodsListReq);
-const _data4 = TarsusStream.parse(queryList.GetGoodsListRes);
-
-// console.log(_data3);
-console.log(_data4);
