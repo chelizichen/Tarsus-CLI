@@ -22,7 +22,7 @@ var TarsusStream = function (url) {
   TarsusStream.base_struct = ["int", "string", "bool"];
   TarsusStream.object_struct = ["List","Set"];
 
-  this._stream = readFileSync(url, "utf-8").trim().replace(/\n|\r/g, ""); // 拿到并去除换行
+  this._stream = readFileSync(url, "utf-8").trim().replace(/\/\/.*/g, '').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ');
 
   let body = new RegExp(/struct(.*)};/g); // 正则1 拿到 结构体数据
   let match = body.exec(this._stream);
@@ -38,7 +38,8 @@ var TarsusStream = function (url) {
     .filter((v) => v)
     .map((e) => e + "}")
     .map((e) => e.trim())
-    .map(e=>TarsusStream.removeComment(e))
+    
+  this._data.pop()
 
   this.readStruct();
 };
@@ -47,8 +48,8 @@ var TarsusStream = function (url) {
  * 删除注释
  * @param {string} str 需要删除注释的字符串
  * @returns {string} 删除注释后的字符串
+ * @deprecated 弃用
  */
-
 TarsusStream.removeComment = function(str) {
   return str.replace(/\/\/\s*([\u4e00-\u9fa5\w]+)\s*/g, '');
 }

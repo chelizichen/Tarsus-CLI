@@ -18,7 +18,7 @@
 struct TestParams  {
   
   Info              : {
-    1       desc    : string; // 商品描述
+    1       desc    : string; // 商品描述 测试
     2       url     : string; // 商品URL
     3       sort    : string; // 商品分类
   };
@@ -44,14 +44,14 @@ struct TestParams  {
   };
 
   GetGoodsListReq    : {
-    2       message : string; // 信息
-    1       ids     : Set<int>; // 商品IDs
+    1       message : string; // 信息
+    2       ids     : Set<int>; // 商品IDs
   };
   
   GetGoodsListRes   : {
-    3       data    : List<Good>; // 商品列表
-    1       code    : int;        // 商品状态码
-    2       message : string;     // 商品信息
+    1       data    : List<Good>; // 商品列表
+    2       code    : int;        // 商品状态码
+    3       message : string;     // 商品信息
   };
 };
 
