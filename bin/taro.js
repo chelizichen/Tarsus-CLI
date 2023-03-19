@@ -17,7 +17,21 @@
 
 
 
-
 const program = require("commander")
 const fs = require('fs');
+const path  = require("path");
+const { TarsusStream } = require("../src");
 
+program
+  .version("1.0.0")
+  .command("link <args>")
+  .description("-- compile *.taro")
+  .action(function (args) {
+    let cwd = process.cwd()
+    let taro_file_path = path.resolve(cwd,args)
+    new TarsusStream(taro_file_path)
+    console.log(TarsusStream.struct_map);
+  });
+
+
+  program.parse(process.argv);

@@ -13,16 +13,18 @@ const { readFileSync } = require("fs");
  * 对缺少的参数进行默认参数设置
  * }
  * **********************************************
-*/
-
-
+ */
 
 var TarsusStream = function (url) {
   TarsusStream.struct_map = new Map();
   TarsusStream.base_struct = ["int", "string", "bool"];
-  TarsusStream.object_struct = ["List","Set"];
+  TarsusStream.object_struct = ["List", "Set"];
 
-  this._stream = readFileSync(url, "utf-8").trim().replace(/\/\/.*/g, '').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ');
+  this._stream = readFileSync(url, "utf-8")
+    .trim()
+    .replace(/\/\/.*/g, "")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\s+/g, " ");
 
   let body = new RegExp(/struct(.*)};/g); // 正则1 拿到 结构体数据
   let match = body.exec(this._stream);
@@ -37,9 +39,9 @@ var TarsusStream = function (url) {
     .split("};")
     .filter((v) => v)
     .map((e) => e + "}")
-    .map((e) => e.trim())
-    
-  this._data.pop()
+    .map((e) => e.trim());
+
+  this._data.pop();
 
   this.readStruct();
 };
@@ -50,13 +52,11 @@ var TarsusStream = function (url) {
  * @returns {string} 删除注释后的字符串
  * @deprecated 弃用
  */
-TarsusStream.removeComment = function(str) {
-  return str.replace(/\/\/\s*([\u4e00-\u9fa5\w]+)\s*/g, '');
-}
+TarsusStream.removeComment = function (str) {
+  return str.replace(/\/\/\s*([\u4e00-\u9fa5\w]+)\s*/g, "");
+};
 
 TarsusStream.prototype.readStruct = function () {
-  console.log(this._data);
-
   this._data.forEach((el) => {
     this._read_struct_(el);
   });
@@ -178,9 +178,8 @@ TarsusStream.check_object_type = function (data, type) {
     });
     if (is_object_type) {
       if (T == "List" || T == "Set") {
-        
-        if(T == "Set"){
-          data = Array.from(new Set(data))
+        if (T == "Set") {
+          data = Array.from(new Set(data));
         }
 
         if (TarsusStream.base_struct.indexOf(req) > -1) {
@@ -200,11 +199,10 @@ TarsusStream.check_object_type = function (data, type) {
           return ret;
         }
       }
-
     } else {
       let body = {
         req: type,
-        data,
+        data: data || {},
       };
       let _data = TarsusStream.parse(body);
       return _data;
@@ -212,8 +210,6 @@ TarsusStream.check_object_type = function (data, type) {
   }
   return null;
 };
-
-
 
 module.exports = {
   TarsusStream,

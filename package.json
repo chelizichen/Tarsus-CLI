@@ -8,7 +8,7 @@
     "type": "git"
   },
   "bin": {
-    "taro": "bin/index.js"
+    "taro": "bin/taro.js"
   },
   "exports": {
     ".": {
@@ -21,7 +21,7 @@
     "cli"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node example/test.js"
   },
   "author": "chelizichen",
   "license": "ISC",

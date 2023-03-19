@@ -1,6 +1,7 @@
 const { TarsusStream } = require("../src/index");
 
-let stream_test = new TarsusStream("example/test.taro");
+new TarsusStream("example/test.taro");
+new TarsusStream("example/comm.taro");
 
 let taro = {
   GetGoodReq: {
@@ -28,9 +29,6 @@ let taro = {
       code: 1,
     },
   },
-};
-
-let queryList = {
   GetGoodsListReq: {
     req: "GetGoodsListReq",
     data: {
@@ -79,15 +77,44 @@ let queryList = {
   },
 };
 
+
+
+
 // const _data1 = TarsusStream.parse(taro.GetGoodReq);
 // const _data2 = TarsusStream.parse(taro.GetGoodRes);
 
 // console.log(_data1);
 // console.log(_data2);
 
-debugger;
-const _data3 = TarsusStream.parse(queryList.GetGoodsListReq);
-// const _data4 = TarsusStream.parse(queryList.GetGoodsListRes);
+// const _data3 = TarsusStream.parse(taro.GetGoodsListReq);
+// const _data4 = TarsusStream.parse(taro.GetGoodsListRes);
 
-console.log(_data3);
+// console.log(_data3);
 // console.log(_data4);
+
+
+let comm = {
+  GetUserByIdReq:{
+    req:"GetUserByIdReq",
+    data:{
+      id:1,
+
+      // basic:{
+        // token:"901283asdjlashdoas901283klasbndiuayh"
+      // }
+    }
+  },
+  GetUserByIdRes:{
+    req:'GetUserByIdRes',
+    data:{
+
+    }
+  }
+}
+
+debugger;
+
+// const _data5 = TarsusStream.parse(comm.GetUserByIdReq)
+// console.log(_data5);
+const _data6 = TarsusStream.parse(comm.GetUserByIdRes)
+console.log(_data6);
