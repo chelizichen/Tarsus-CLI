@@ -54,6 +54,8 @@ TaroCreateObject.Java = function () { }
 TaroCreateObject.Java.IMPORT_SET = 'import java.util.Set;\n'
 TaroCreateObject.Java.IMPORT_LIST = 'import java.util.List;\n'
 TaroCreateObject.Java.IMPORT_JSON = 'import com.alibaba.fastjson.JSON;\n'
+TaroCreateObject.Java.IMPORT_HASHMAP = "import java.util.HashMap;\n"
+TaroCreateObject.Java.IMPORT_ARRAY_LIST = "import java.util.ArrayList;\n"
 
 /**
  * @param {string} package 
@@ -93,15 +95,25 @@ TaroCreateObject.Java.render = function (key, value, package) {
 
   let render = `
 package ${package};
-import com.tarsus.example.decorator.TarsusParam;
+import com.tarsus.example.decorator.TaroStruct;
 ${TaroCreateObject.Java.IMPORT_LIST}
 ${TaroCreateObject.Java.IMPORT_JSON}
+${TaroCreateObject.Java.IMPORT_ARRAY_LIST}
+${TaroCreateObject.Java.IMPORT_HASHMAP}
 ${IMPORTS}
-@TarsusParam
+
+@TaroStruct
 public class ${key}{
   ${PARAMS}
-  public ${key}(List<String> list){
+
+  // ListConstructor
+  public ${key}(List<Object> list){
     ${CONSTS}  
+  }
+
+  // NoArgsConstructor
+  public ${key}(){
+
   }
 }
   `
@@ -152,21 +164,33 @@ TaroCreateObject.Java.SetImport = function (value) {
     item.type = item.type.replace("string", "String").replace("int", "Integer")
 
     // 复杂类型 列表
-    if (Obj == "List" && T) {
-      TaroTObj[item.param].construct = `this.${item.param} = JSON.parseArray(list.get(${item.index - 1}),${T[1]}.class);\n  `
+    if (Obj == "List" && T && T[1] != "int") {
+      TaroTObj[item.param].construct = `
+      List<HashMap> listMaps${item.index-1} = JSON.parseArray((String) list.get(${item.index-1}), HashMap.class);
+      this.${item.param} = new ArrayList<>();
+      for(HashMap hm : listMaps${item.index-1}){
+        ${T[1]} ${T[1].toLowerCase()} = new ${T[1]}();
+        ${
+          TarsusStream.struct_map.get(T[1]).map(el=>{
+            return `${T[1].toLowerCase()}.${el.param} = (String) hm.get("${el.param}");`
+          }).join("\n        ")
+        }
+        this.${item.param}.add(${T[1].toLowerCase()});
+      }
+      `
     } else if (Obj == "List") {
       // 普通类型列表  
-
-      TaroTObj[item.param].construct = `this.${item.param} = JSON.parseArray(list.get(${item.index - 1}),${item.type}.class);\n  `
+      let commType = item.type.replace("List<","").replace(">","")
+      TaroTObj[item.param].construct = `this.${item.param} = JSON.parseArray((String) list.get(${item.index - 1}),${commType}.class);\n  `
     } else if (is_obj) {
 
-      TaroTObj[item.param].construct = `this.${item.param} = new ${item.type}(JSON.parseArray(list.get(${item.index - 1}),String.class));\n  `;
+      TaroTObj[item.param].construct = `this.${item.param} = new ${item.type}((List<Object>)list.get(${item.index - 1}));\n  `;
     } else {
 
       if (item.type == "Integer") {
-        TaroTObj[item.param].construct = `this.${item.param} = Integer.valueOf(list.get(${item.index - 1}));\n  `;
-      } else {
-        TaroTObj[item.param].construct = `this.${item.param} = list.get(${item.index - 1});\n  `;
+        TaroTObj[item.param].construct = `this.${item.param} = Integer.valueOf((String) list.get(${item.index - 1}));\n  `;
+      } else if(item.type == "String"){
+        TaroTObj[item.param].construct = `this.${item.param} = (String) list.get(${item.index - 1});\n  `;
       }
     }
     TaroTObj[item.param].param = `public ${item.type} ${item.param};\n  `
