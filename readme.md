@@ -1,9 +1,19 @@
 # Tarsus-CLI
 
+## BTW
+
+目前已支持 Taro文件映射生成对应的 TS 文件和 Java文件
+Taro 可以使得参数自动化补全和类型校验。
+也可以在不引入JS的情况下替代TS的功能。
+
 ## includes
 
+````cmd
+npm install tarsus-cli
+````
+
 - Tarsus-Stream
-  - Taro-Command
+  - Taro to [type] [filePath] -p [pkg]
     - taro to java comm.taro -p com.tarsus.example.Test.taro
     - taro to ts comm.taro
 
