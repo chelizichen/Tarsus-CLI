@@ -1,10 +1,10 @@
 const path = require("path");
 const process = require("process");
-const fs = require("fs")
+const fs = require("fs");
 
 const { TarsusStream } = require("../../src/stream/index");
 
-function TaroCreateObject(type, taro_file_path, option) {
+var TaroCreateObject = function (type, taro_file_path, option) {
   switch (type) {
     case "ts": {
       let StructToFile = "";
@@ -20,7 +20,7 @@ function TaroCreateObject(type, taro_file_path, option) {
 
           StructToFile += "  " + item.param + " : " + item.type + ";\n";
         });
-        StructToFile += "};\n\n";
+        StructToFile += "};\n";
       });
       let toWriteFilePath = taro_file_path.replace(".taro", ".ts");
       fs.writeFileSync(toWriteFilePath, StructToFile);
@@ -31,68 +31,151 @@ function TaroCreateObject(type, taro_file_path, option) {
       let package = option.package;
 
       TarsusStream.struct_map.forEach((value, key) => {
-        let StructToFile = "";
-        let getT = new RegExp(/<(.*)>/)
-        // 1 判断是否有 List Set 等
-        let JavaObj = Array.from(new Set(value.map(item => {
-          if (item.type.startsWith("List")) {
+        let render = TaroCreateObject.Java.render(key, value, package);
 
-            let typeStruct = "";
-            let data = getT.exec(item.type)[1]
-            
-            // 如果没有基本类型
-            if (!TarsusStream.base_struct.some(base => data == base)) {
-              // 引入新的类型
-              typeStruct += "import " + package + "." + data + ";\n";
-            }
+        let getPath = TaroCreateObject.GetFilePath(key + ".java");
 
-            typeStruct += "import java.util.List;\n"
-            return typeStruct
-          }
-
-          if (item.type.startsWith("Set")) {
-            let typeStruct = "";
-            let data = getT.exec(item.type)[1]
-            
-            // 如果没有基本类型
-            if (!TarsusStream.base_struct.every(base => data == base)) {
-              // 引入新的类型
-              typeStruct += "import " + package + "." + data + ";\n";
-            }
-            
-            typeStruct += "import java.util.Set;\n"
-            return typeStruct
-          }
-
-        }).filter(v => v)))
-
-        StructToFile += "package " + option.package + ";\n"
-
-        JavaObj.forEach(item => {
-          StructToFile += item
-        })
-
-        StructToFile += `public class ${key}{ \n`;
-
-        value.forEach((item) => {
-          item.type = item.type.replace("int", "Integer"); // String类型为 Integer
-          item.type = item.type.replace("string", "String") // 替换类型为 String
-          StructToFile += "     public " + item.type + " " + item.param + ";\n";
-        });
-
-        StructToFile += "}";
-
-        fs.writeFileSync(GetFilePath(key + ".java"), StructToFile);
+        fs.writeFileSync(getPath, render);
       });
       break;
     }
   }
-}
+};
 
-function GetFilePath(fileName) {
+TaroCreateObject.GetFilePath = function (fileName) {
   let cwd = process.cwd();
   let filePath = path.resolve(cwd, fileName);
   return filePath;
+};
+
+
+TaroCreateObject.Java = function () { }
+
+TaroCreateObject.Java.IMPORT_SET = 'import java.util.Set;\n'
+TaroCreateObject.Java.IMPORT_LIST = 'import java.util.List;\n'
+TaroCreateObject.Java.IMPORT_JSON = 'import com.alibaba.fastjson.JSON;\n'
+
+/**
+ * @param {string} package 
+ * @param {string} CLASS 
+ * @returns {string}
+ */
+TaroCreateObject.Java.IMPORT = function (package, CLASS) {
+  return ` import ${package}.${CLASS};\n`;
+}
+
+/**
+ * @param {Array} targetArray 
+ */
+TaroCreateObject.FilterTheSame = function (targetArray) {
+  return Array.from(new Set(targetArray))
+}
+
+
+
+TaroCreateObject.Java.render = function (key, value, package) {
+  TaroCreateObject.Java.PKG = package
+  // 设置引入的参数和构造函数
+  TaroCreateObject.Java.SetImport(value)
+
+  let IMPORTS = ""
+  let PARAMS = ""
+  let CONSTS = ""
+  // console.log(TaroCreateObject.Java.TarTObj);
+  for (let k in TaroCreateObject.Java.TaroTObj) {
+    let obj = TaroCreateObject.Java.TaroTObj[k]
+    if (obj.import) {
+      IMPORTS += obj.import
+    }
+    PARAMS += obj.param
+    CONSTS += obj.construct
+  }
+
+  let render = `
+package ${package};
+import com.tarsus.example.decorator.TarsusParam;
+${TaroCreateObject.Java.IMPORT_LIST}
+${TaroCreateObject.Java.IMPORT_JSON}
+${IMPORTS}
+@TarsusParam
+public class ${key}{
+  ${PARAMS}
+  public ${key}(List<String> list){
+    ${CONSTS}  
+  }
+}
+  `
+  return render
+};
+
+// 这一步需要匹配 复杂类型
+// for exmaple
+// List<User> 在解析的时候我们需要匹配为 User
+// 自动生成 import xxx.User
+// 和 在 构造函数时自动生成
+// this.xxx = JSON.parseArray(list.get(index),User.class);
+// User 在解析的时候需要
+
+TaroCreateObject.Java.SetImport = function (value) {
+
+  let getT = new RegExp(/<(.*)>/);
+  let BaseStruct = TarsusStream.base_struct
+  let PKG = TaroCreateObject.Java.PKG
+  let TaroTObj = {}
+
+  value.forEach(item => {
+    TaroTObj[item.param] = {}
+    TaroTObj[item.param].index = item.index;
+
+    let T = getT.exec(item.type)
+
+
+    // 将  List<User> repleace 为 List
+    let Obj = ""
+    let is_obj = false
+    // 直接匹配复杂类型
+    if (T) {
+      is_obj = BaseStruct.every(el => el != T[1]);
+      Obj = item.type.replace(T[0], "");
+      if (is_obj) {
+        // 添加引入 
+        TaroTObj[item.param].import = TaroCreateObject.Java.IMPORT(PKG, T[1])
+      }
+    } else {
+      is_obj = BaseStruct.every(el => el != item.type);
+      if (is_obj) {
+        // 添加引入 
+        TaroTObj[item.param].import = TaroCreateObject.Java.IMPORT(PKG, item.type)
+      }
+    }
+
+    item.type = item.type.replace("string", "String").replace("int", "Integer")
+
+    // 复杂类型 列表
+    if (Obj == "List" && T) {
+      TaroTObj[item.param].construct = `this.${item.param} = JSON.parseArray(list.get(${item.index - 1}),${T[1]}.class);\n  `
+    } else if (Obj == "List") {
+      // 普通类型列表  
+
+      TaroTObj[item.param].construct = `this.${item.param} = JSON.parseArray(list.get(${item.index - 1}),${item.type}.class);\n  `
+    } else if (is_obj) {
+
+      TaroTObj[item.param].construct = `this.${item.param} = new ${item.type}(JSON.parseArray(list.get(${item.index - 1}),String.class));\n  `;
+    } else {
+
+      if (item.type == "Integer") {
+        TaroTObj[item.param].construct = `this.${item.param} = Integer.valueOf(list.get(${item.index - 1}));\n  `;
+      } else {
+        TaroTObj[item.param].construct = `this.${item.param} = list.get(${item.index - 1});\n  `;
+      }
+    }
+    TaroTObj[item.param].param = `public ${item.type} ${item.param};\n  `
+
+  })
+
+  TaroCreateObject.Java.TaroTObj = TaroTObj
+
+
 }
 
 module.exports = {
