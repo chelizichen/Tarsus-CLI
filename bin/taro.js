@@ -37,12 +37,16 @@ program
 program
   .version("1.0.0")
   .command("to <type> <file>")
+  .option('-p, --package [value]',"set the package url")
   .description("-- compile *.taro")
-  .action(function (type,file) {
+  .action(function (type, file, option) {
+    if (type == "java" && !option.package) {
+      throw new Error(" missing [-p] when use taro to java *.taro ")
+    }
     let cwd = process.cwd()
     let taro_file_path = path.resolve(cwd,file)
     new TarsusStream(taro_file_path)
-    TaroCreateObject(type,taro_file_path)
+    TaroCreateObject(type,taro_file_path,option)
   });
 
   
