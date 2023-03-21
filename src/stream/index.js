@@ -25,9 +25,13 @@ var TarsusStream = function (url) {
     .replace(/\/\/.*/g, "")
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .replace(/\s+/g, " ");
+  
+  let spl = this._stream.split("interface")
+  this._struct_stream = spl[0];
+  this._interface_stream = "interface" + spl[1]
 
   let body = new RegExp(/struct(.*)};/g); // 正则1 拿到 结构体数据
-  let match = body.exec(this._stream);
+  let match = body.exec(this._struct_stream);
 
   let struct = new RegExp(/struct (.*?){ /s); // 正则2 拿到 结构体名称
 
@@ -45,6 +49,18 @@ var TarsusStream = function (url) {
 
 
   this.readStruct();
+
+  // 添加 interFace 支持
+  let interFace_body_reg = /interface(.*?)};/
+  let interFace_body = interFace_body_reg.exec(this._interface_stream)
+  interFace_body = interFace_body[1].split("{")[1]
+
+  let interFace_name_reg = /interface(.*){/
+  let interFace_name = interFace_name_reg.exec(this._interface_stream)[1]
+  
+  console.log(interFace_name);
+  console.log(interFace_body);
+
 };
 
 /**
@@ -61,6 +77,7 @@ TarsusStream.prototype.readStruct = function () {
   this._data.forEach((el) => {
     this._read_struct_(el);
   });
+  console.log(TarsusStream.struct_map);
 };
 
 TarsusStream.prototype._read_struct_ = function (struct) {
