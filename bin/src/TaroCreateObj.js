@@ -100,6 +100,7 @@ ${TaroCreateObject.Java.IMPORT_LIST}
 ${TaroCreateObject.Java.IMPORT_JSON}
 ${TaroCreateObject.Java.IMPORT_ARRAY_LIST}
 ${TaroCreateObject.Java.IMPORT_HASHMAP}
+import com.alibaba.fastjson.JSONObject;
 ${IMPORTS}
 
 @TaroStruct
@@ -114,6 +115,11 @@ public class ${key}{
   // NoArgsConstructor
   public ${key}(){
 
+  }
+  // toJson
+  public String json(){
+    Object o = JSONObject.toJSON(this);
+    return o.toString();
   }
 }
   `
