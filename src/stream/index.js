@@ -138,7 +138,7 @@ TarsusStream.check_type = function (value, type) {
     }
     switch (type) {
       case "int": {
-        if (typeof value == "number") return value;
+        if (typeof value == "number" || !isNaN(value)) return value;
         return undefined;
       }
       case "string": {
