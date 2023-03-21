@@ -62,9 +62,11 @@ var TarsusStream = function (url) {
   this._interFace = interFace_body
     .split(";")
     .filter(v => v.trim())
-
-  console.log(this._interFace);
-  console.log(this._interFace_name);
+  
+  // let __data = generateCode(this._interFace)
+  // console.log(this._interFace);
+  // console.log(__data);
+  // console.log(this._interFace_name);
 
 
 };
@@ -234,6 +236,8 @@ TarsusStream.check_object_type = function (data, type) {
   }
   return null;
 };
+
+
 
 module.exports = {
   TarsusStream,

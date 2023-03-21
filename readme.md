@@ -18,6 +18,8 @@ npm install tarsus-cli
   - Taro to [type] [filePath] -p [pkg]
     - taro to java comm.taro -p com.tarsus.example.Test.taro
     - taro to ts comm.taro
+  - taro inf [type] [filePath] -p [pkg]
+    - taro inf java ./TaroUser.taro -p com.tarsus.example.taro
 
 ````taro
 /**
