@@ -51,15 +51,21 @@ var TarsusStream = function (url) {
   this.readStruct();
 
   // 添加 interFace 支持
+  // 计划添加
   let interFace_body_reg = /interface(.*?)};/
   let interFace_body = interFace_body_reg.exec(this._interface_stream)
   interFace_body = interFace_body[1].split("{")[1]
 
   let interFace_name_reg = /interface(.*){/
-  let interFace_name = interFace_name_reg.exec(this._interface_stream)[1]
+  this._interFace_name = interFace_name_reg.exec(this._interface_stream)[1]
   
-  console.log(interFace_name);
-  console.log(interFace_body);
+  this._interFace = interFace_body
+    .split(";")
+    .filter(v => v.trim())
+
+  console.log(this._interFace);
+  console.log(this._interFace_name);
+
 
 };
 
