@@ -10,16 +10,38 @@ var TaroCreateObject = function (type, taro_file_path, option) {
       let StructToFile = "";
       // 每一个 类型进行设置
       TarsusStream.struct_map.forEach((value, key) => {
-        StructToFile += `type ${key} = { \n`;
-
+        StructToFile += `class ${key}{ \n`;
+        // 先 确定成员变量给
         value.forEach((item) => {
           item.type = item.type.replace("int", "number");
           if (item.type.startsWith("List")) {
             item.type = item.type.replace("List", "Array");
           }
 
-          StructToFile += "  " + item.param + " : " + item.type + ";\n";
+          StructToFile += " public " + item.param + " : " + item.type + " = null;\n";
+
         });
+        StructToFile += `constructor(...args:any[]){ \n`
+        value.forEach((item)=>{
+          let isBase = TaroCreateObject.TS.TsBase_Obj.some(ele=>item.type == ele)
+          if(isBase){
+            StructToFile += `this.${item.param} = args[${item.index}];\n `
+          }else if(Array.from(TarsusStream.struct_map.keys()).indexOf(item.type)>-1){
+            StructToFile += `this.${item.param} = new ${item.type}(...args[${item.index}]) \n`
+          }else{ // Set List
+            let DefineObj_Reg = /<(.*)>/
+            let T = DefineObj_Reg.exec(item.type)
+            if(T && T.length){
+              if( T[1] != "number" && T[1] != "string" && item.type.startsWith("Array") ){
+                StructToFile += `this.${item.param} = JSON.parse(args[${item.index}]).map(item=>new ${T[1]}(...Object.values(item))); \n`
+              }else if(item.type.startsWith("Array")){
+                StructToFile += `this.${item.param} = JSON.parse(args[${item.index}]);\n`
+              }
+            }
+          }
+        })
+        StructToFile += `}\n`
+
         StructToFile += "};\n";
       });
       let toWriteFilePath = taro_file_path.replace(".taro", ".ts");
@@ -41,6 +63,12 @@ var TaroCreateObject = function (type, taro_file_path, option) {
     }
   }
 };
+
+
+TaroCreateObject.TS = function(){}
+TaroCreateObject.TS.TsBase_Obj = ["number","string"]
+TaroCreateObject.TS.TsObj = ["Array","Set"]
+
 
 TaroCreateObject.GetFilePath = function (fileName) {
   let cwd = process.cwd();

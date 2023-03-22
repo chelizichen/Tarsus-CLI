@@ -19,7 +19,6 @@ var TarsusStream = function (url) {
   TarsusStream.struct_map = new Map();
   TarsusStream.base_struct = ["int", "string", "bool"];
   TarsusStream.object_struct = ["List", "Set"];
-
   this._stream = readFileSync(url, "utf-8")
     .trim()
     .replace(/\/\/.*/g, "")
