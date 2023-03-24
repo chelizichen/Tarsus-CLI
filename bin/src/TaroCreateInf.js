@@ -67,7 +67,7 @@ TaroCreateInf.createInf = function (arr) {
   let nodejsCode = "";
   for (let i = 0; i < interfaces.length; i++) {
     let interfaceObj = interfaces[i];
-    nodejsCode += `${interfaceObj.methodName}(Request:${interfaceObj.requestType},Response:${interfaceObj.responseType}):number \n    `
+    nodejsCode += `${interfaceObj.methodName}(Request:${interfaceObj.requestType},Response:${interfaceObj.responseType}):Promise<${interfaceObj.responseType}> \n    `
     // nodejsCode += `app.${interfaceObj.returnType.toLowerCase()}('${
     //   interfaceObj.methodName
     // }', function(req, res) {\n\t// Implementation\n});\n`;

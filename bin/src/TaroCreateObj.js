@@ -8,36 +8,43 @@ var TaroCreateObject = function (type, taro_file_path, option) {
   switch (type) {
     case "ts": {
       let StructToFile = "";
+      // 添加依赖
+      StructToFile += `const { TarsusReadStream } = require("tarsus-cli");\n`;
+
       // 每一个 类型进行设置
       TarsusStream.struct_map.forEach((value, key) => {
         StructToFile += `export class ${key}{ \n`;
         // 先 确定成员变量给
         value.forEach((item) => {
-          item.type = item.type.replace("int", "number");
-          if (item.type.startsWith("List")) {
-            item.type = item.type.replace("List", "Array");
-          }
-
-          StructToFile += " public " + item.param + " : " + item.type + ";\n";
+          let ts_type = item.type.replace("int","number").replace("List<","Array<");
+          
+          // item.type = item.type.replace("int", "number");
+          // if (item.type.startsWith("List")) {
+          //   item.type = item.type.replace("List", "Array");
+          // }
+          StructToFile += " public " + item.param + " : " + ts_type + ";\n";
 
         });
         StructToFile += `constructor(...args:any[]){ \n`
+        StructToFile += ` const _TarsusReadStream = new TarsusReadStream("${key}", args);\n`
+
+
         value.forEach((item) => {
-          let isBase = TaroCreateObject.TS.TsBase_Obj.some(ele => item.type == ele)
+          let isBase = TarsusStream.base_struct.some(ele => item.type == ele)
+          // 是否为基础类型
           if (isBase) {
-            StructToFile += `this.${item.param} = args[${item.index}];\n `
-          } else if (Array.from(TarsusStream.struct_map.keys()).indexOf(item.type) > -1) {
-            StructToFile += `this.${item.param} = new ${item.type}(...args[${item.index}]) \n`
-          } else { // Set List
-            let DefineObj_Reg = /<(.*)>/
-            let T = DefineObj_Reg.exec(item.type)
-            if (T && T.length) {
-              if (T[1] != "number" && T[1] != "string" && item.type.startsWith("Array")) {
-                StructToFile += `this.${item.param} = JSON.parse(args[${item.index}]).map(item=>new ${T[1]}(...Object.values(item))); \n`
-              } else if (item.type.startsWith("Array")) {
-                StructToFile += `this.${item.param} = JSON.parse(args[${item.index}]);\n`
-              }
+            if(item.type == "int"){
+              StructToFile += `this.${item.param} = _TarsusReadStream.read_int(${item.index});\n `
             }
+            if(item.type == "string"){
+              StructToFile += `this.${item.param} = _TarsusReadStream.read_string(${item.index});\n`
+            }
+          } 
+          else if (item.type.startsWith("List")) {
+            StructToFile += `this.${item.param} = _TarsusReadStream.read_list(${item.index},"${item.type}");\n`
+          }
+          else { // Set List
+            StructToFile += `this.${item.param} = _TarsusReadStream.read_struct(${item.index},"${item.type}");`
           }
         })
         StructToFile += `}\n`

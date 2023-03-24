@@ -1,16 +1,19 @@
 import { GetUserByIdReq, GetUserByIdRes, GetUserListReq, GetUserListRes } from "./TaroUser"
 
 interface  TaroInterFace {
-    getUserById(Request:GetUserByIdReq,Response:GetUserByIdRes):number 
+    getUserById(Request:GetUserByIdReq,Response:GetUserByIdRes):Promise<any> 
     getUserList(Request:GetUserListReq,Response:GetUserListRes):number 
 }
 
-class TaroInterFaceImp implements TaroInterFace{
-  getUserById(Request: GetUserByIdReq, Response: GetUserByIdRes): number {
-    return 0;
+class TaroInterFaceImpl implements TaroInterFace{
+  getUserById(Request: GetUserByIdReq, Response: GetUserByIdRes): Promise<any> {
+    return new Promise<void>((resolve, reject) => {
+      
+    })
   }
   getUserList(Request: GetUserListReq, Response: GetUserListRes): number {
-    return 0;
+    throw new Error("Method not implemented.")
   }
 
 }
+
