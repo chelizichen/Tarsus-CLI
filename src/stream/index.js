@@ -25,7 +25,7 @@ var TarsusStream = function (url) {
   TarsusStream.struct_map = new Map();
   TarsusStream.base_struct = ["int", "string", "bool"];
   TarsusStream.object_struct = ["List", "Set"];
-  
+
   // 自定义的结构体类型
   TarsusStream.define_structs = {}
 
@@ -34,7 +34,7 @@ var TarsusStream = function (url) {
     .replace(/\/\/.*/g, "")
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .replace(/\s+/g, " ");
-  
+
   let spl = this._stream.split("interface")
   this._struct_stream = spl[0];
   this._interface_stream = "interface" + spl[1]
@@ -64,12 +64,12 @@ var TarsusStream = function (url) {
   // 计划添加
   let interFace_body_reg = /interface(.*?)};/
   let interFace_body = interFace_body_reg.exec(this._interface_stream)
-  if(interFace_body){
+  if (interFace_body) {
     interFace_body = interFace_body[1].split("{")[1]
 
     let interFace_name_reg = /interface(.*){/
     this._interFace_name = interFace_name_reg.exec(this._interface_stream)[1]
-    
+
     this._interFace = interFace_body
       .split(";")
       .filter(v => v.trim())
