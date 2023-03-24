@@ -22,19 +22,19 @@ var TaroCreateObject = function (type, taro_file_path, option) {
 
         });
         StructToFile += `constructor(...args:any[]){ \n`
-        value.forEach((item)=>{
-          let isBase = TaroCreateObject.TS.TsBase_Obj.some(ele=>item.type == ele)
-          if(isBase){
+        value.forEach((item) => {
+          let isBase = TaroCreateObject.TS.TsBase_Obj.some(ele => item.type == ele)
+          if (isBase) {
             StructToFile += `this.${item.param} = args[${item.index}];\n `
-          }else if(Array.from(TarsusStream.struct_map.keys()).indexOf(item.type)>-1){
+          } else if (Array.from(TarsusStream.struct_map.keys()).indexOf(item.type) > -1) {
             StructToFile += `this.${item.param} = new ${item.type}(...args[${item.index}]) \n`
-          }else{ // Set List
+          } else { // Set List
             let DefineObj_Reg = /<(.*)>/
             let T = DefineObj_Reg.exec(item.type)
-            if(T && T.length){
-              if( T[1] != "number" && T[1] != "string" && item.type.startsWith("Array") ){
+            if (T && T.length) {
+              if (T[1] != "number" && T[1] != "string" && item.type.startsWith("Array")) {
                 StructToFile += `this.${item.param} = JSON.parse(args[${item.index}]).map(item=>new ${T[1]}(...Object.values(item))); \n`
-              }else if(item.type.startsWith("Array")){
+              } else if (item.type.startsWith("Array")) {
                 StructToFile += `this.${item.param} = JSON.parse(args[${item.index}]);\n`
               }
             }
@@ -65,9 +65,9 @@ var TaroCreateObject = function (type, taro_file_path, option) {
 };
 
 
-TaroCreateObject.TS = function(){}
-TaroCreateObject.TS.TsBase_Obj = ["number","string"]
-TaroCreateObject.TS.TsObj = ["Array","Set"]
+TaroCreateObject.TS = function () { }
+TaroCreateObject.TS.TsBase_Obj = ["number", "string"]
+TaroCreateObject.TS.TsObj = ["Array", "Set"]
 
 
 TaroCreateObject.GetFilePath = function (fileName) {
@@ -124,19 +124,23 @@ TaroCreateObject.Java.render = function (key, value, package) {
   let render = `
 package ${package};
 import com.tarsus.example.decorator.TaroStruct;
-${TaroCreateObject.Java.IMPORT_LIST}
-${TaroCreateObject.Java.IMPORT_JSON}
-${TaroCreateObject.Java.IMPORT_ARRAY_LIST}
-${TaroCreateObject.Java.IMPORT_HASHMAP}
+import com.tarsus.example.base.inf.TarsusJson;
+import com.tarsus.example.base.TarsusStream;
+import com.alibaba.fastjson.JSON;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 import com.alibaba.fastjson.JSONObject;
+
 ${IMPORTS}
 
 @TaroStruct
-public class ${key}{
+public class ${key} implements TarsusJson{
   ${PARAMS}
 
   // ListConstructor
-  public ${key}(List<Object> list){
+  public ${key}(List<?> list){
+    TarsusStream _tarsusStream = new TarsusStream(list, "${key}");
     ${CONSTS}  
   }
 
@@ -145,6 +149,7 @@ public class ${key}{
 
   }
   // toJson
+  @Override
   public String json(){
     Object o = JSONObject.toJSON(this);
     return o.toString();
@@ -171,12 +176,9 @@ TaroCreateObject.Java.SetImport = function (value) {
 
   value.forEach(item => {
     TaroTObj[item.param] = {}
+
     TaroTObj[item.param].index = item.index;
-
     let T = getT.exec(item.type)
-
-
-    // 将  List<User> repleace 为 List
     let Obj = ""
     let is_obj = false
     // 直接匹配复杂类型
@@ -188,6 +190,7 @@ TaroCreateObject.Java.SetImport = function (value) {
         TaroTObj[item.param].import = TaroCreateObject.Java.IMPORT(PKG, T[1])
       }
     } else {
+      // 不是复杂类型
       is_obj = BaseStruct.every(el => el != item.type);
       if (is_obj) {
         // 添加引入 
@@ -195,40 +198,23 @@ TaroCreateObject.Java.SetImport = function (value) {
       }
     }
 
-    item.type = item.type.replace("string", "String").replace("int", "Integer")
+    // 先做复杂类型
+    let JavaType = item.type.replace("string", "String").replace("int", "Integer")
+    TaroTObj[item.param].param = `public ${JavaType} ${item.param};\n`;
 
-    // 复杂类型 列表
-    if (Obj == "List" && T && T[1] != "int") {
-      TaroTObj[item.param].construct = `
-      List<HashMap> listMaps${item.index-1} = JSON.parseArray((String) list.get(${item.index-1}), HashMap.class);
-      this.${item.param} = new ArrayList<>();
-      for(HashMap hm : listMaps${item.index-1}){
-        ${T[1]} ${T[1].toLowerCase()} = new ${T[1]}();
-        ${
-          TarsusStream.struct_map.get(T[1]).map(el=>{
-            return `${T[1].toLowerCase()}.${el.param} = (String) hm.get("${el.param}");`
-          }).join("\n        ")
-        }
-        this.${item.param}.add(${T[1].toLowerCase()});
-      }
-      `
-    } else if (Obj == "List") {
-      // 普通类型列表  
-      let commType = item.type.replace("List<","").replace(">","")
-      TaroTObj[item.param].construct = `this.${item.param} = JSON.parseArray((String) list.get(${item.index - 1}),${commType}.class);\n  `
-    } else if (is_obj) {
-
-      TaroTObj[item.param].construct = `this.${item.param} = new ${item.type}((List<Object>)list.get(${item.index - 1}));\n  `;
+    // 判断类型，添加构造函数列表
+    if (Obj == "List") {
+      TaroTObj[item.param].construct = `    this.${item.param} = _tarsusStream.read_list(${item.index},"${item.type}");\n`
+    }
+    if (is_obj) {
+      TaroTObj[item.param].construct = `    this.${item.param} = _tarsusStream.read_struct(${item.index},"${item.type}");\n`
     } else {
-
-      if (item.type == "Integer") {
-        TaroTObj[item.param].construct = `this.${item.param} = Integer.valueOf((String) list.get(${item.index - 1}));\n  `;
-      } else if(item.type == "String"){
-        TaroTObj[item.param].construct = `this.${item.param} = (String) list.get(${item.index - 1});\n  `;
+      if (item.type == "int") {
+        TaroTObj[item.param].construct = `    this.${item.param} = _tarsusStream.read_int(${item.index});\n`
+      } else if (item.type == "string") {
+        TaroTObj[item.param].construct = `    this.${item.param} = _tarsusStream.read_string(${item.index});\n`
       }
     }
-    TaroTObj[item.param].param = `public ${item.type} ${item.param};\n  `
-
   })
 
   TaroCreateObject.Java.TaroTObj = TaroTObj
