@@ -10,7 +10,7 @@ var TaroCreateObject = function (type, taro_file_path, option) {
       let StructToFile = "";
       // 每一个 类型进行设置
       TarsusStream.struct_map.forEach((value, key) => {
-        StructToFile += `class ${key}{ \n`;
+        StructToFile += `export class ${key}{ \n`;
         // 先 确定成员变量给
         value.forEach((item) => {
           item.type = item.type.replace("int", "number");
@@ -18,7 +18,7 @@ var TaroCreateObject = function (type, taro_file_path, option) {
             item.type = item.type.replace("List", "Array");
           }
 
-          StructToFile += " public " + item.param + " : " + item.type + " = null;\n";
+          StructToFile += " public " + item.param + " : " + item.type + ";\n";
 
         });
         StructToFile += `constructor(...args:any[]){ \n`

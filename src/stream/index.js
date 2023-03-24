@@ -16,9 +16,19 @@ const { readFileSync } = require("fs");
  */
 
 var TarsusStream = function (url) {
+
+  this.readStruct = TarsusStream.prototype.readStruct.bind(this)
+  this._read_struct_ = TarsusStream.prototype._read_struct_.bind(this)
+
+
+
   TarsusStream.struct_map = new Map();
   TarsusStream.base_struct = ["int", "string", "bool"];
   TarsusStream.object_struct = ["List", "Set"];
+  
+  // 自定义的结构体类型
+  TarsusStream.define_structs = {}
+
   this._stream = readFileSync(url, "utf-8")
     .trim()
     .replace(/\/\/.*/g, "")
@@ -46,9 +56,9 @@ var TarsusStream = function (url) {
 
   this._data.pop();
 
+  console.log(this._struct_name);
 
   this.readStruct();
-
 
   // 添加 interFace 支持
   // 计划添加
@@ -64,17 +74,6 @@ var TarsusStream = function (url) {
       .split(";")
       .filter(v => v.trim())
   }
-
-};
-
-/**
- * 删除注释
- * @param {string} str 需要删除注释的字符串
- * @returns {string} 删除注释后的字符串
- * @deprecated 弃用
- */
-TarsusStream.removeComment = function (str) {
-  return str.replace(/\/\/\s*([\u4e00-\u9fa5\w]+)\s*/g, "");
 };
 
 TarsusStream.prototype.readStruct = function () {
@@ -110,6 +109,16 @@ TarsusStream.prototype._read_struct_ = function (struct) {
   struct_type = struct_type.sort((a, b) => a.index - b.index);
 
   TarsusStream.struct_map.set(struct_name, struct_type);
+};
+
+/**
+ * 删除注释
+ * @param {string} str 需要删除注释的字符串
+ * @returns {string} 删除注释后的字符串
+ * @deprecated 弃用
+ */
+TarsusStream.removeComment = function (str) {
+  return str.replace(/\/\/\s*([\u4e00-\u9fa5\w]+)\s*/g, "");
 };
 
 TarsusStream.parse = function (body) {
@@ -234,6 +243,20 @@ TarsusStream.check_object_type = function (data, type) {
 };
 
 
+TarsusStream.define_struct = function (clazz) {
+  // 设置 自定义struct
+  if (clazz instanceof Array) {
+    clazz.forEach(item => {
+      TarsusStream.define_struct(item)
+    })
+  } else {
+    TarsusStream.define_structs[clazz.name] = clazz;
+  }
+}
+
+TarsusStream.get_struct = function (clazzName) {
+  return TarsusStream.define_structs[clazzName]
+}
 
 module.exports = {
   TarsusStream,
