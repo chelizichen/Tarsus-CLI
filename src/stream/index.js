@@ -125,6 +125,11 @@ TarsusStream.parse = function (body) {
   let { req, data } = body;
   let struct = TarsusStream.struct_map.get(req);
   let _data = {};
+
+  if (struct === undefined) {
+    return {}
+  }
+  
   struct.forEach((item) => {
     const isObject = TarsusStream.check_object_type(
       data[item.param],
