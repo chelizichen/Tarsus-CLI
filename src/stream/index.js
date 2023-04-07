@@ -1,4 +1,5 @@
 const { readFileSync } = require("fs");
+const { TaroError } = require("./err")
 
 /**
  * *********************************************
@@ -142,10 +143,10 @@ TarsusStream.parse = function (body) {
       // 为基础类型
       let check_type = TarsusStream.check_type(data[item.param], item.type);
       // console.log("check_type",check_type);
-      if (check_type !== undefined) {
+      if (typeof check_type != "function") {
         _data[item.param] = check_type;
       } else {
-        throw new TypeError(`${data[item.param]} is not typeof ${item.type}`);
+        check_type(data[item.param])
       }
     }
   });
@@ -174,15 +175,15 @@ TarsusStream.check_type = function (value, type) {
     switch (type) {
       case "int": {
         if (typeof value == "number" || !isNaN(value)) return value;
-        return undefined;
+        return TaroError.int;
       }
       case "string": {
         if (typeof value == "string") return value;
-        return undefined;
+        return TaroError.string;
       }
       case "bool": {
         if (typeof value == "boolean") return value;
-        return undefined;
+        return TaroError.bool;
       }
       default: {
         return undefined;
@@ -214,16 +215,18 @@ TarsusStream.check_object_type = function (data, type) {
     });
     if (is_object_type) {
       if (T == "List" || T == "Set") {
+        if (!data) data = [];
+
         if (T == "Set") {
           data = Array.from(new Set(data));
         }
-
+        let is_type_available;
         if (TarsusStream.base_struct.indexOf(req) > -1) {
-          let is_type_available = data.every((item) =>
-            TarsusStream.check_type(item, req)
+          is_type_available = data.every((item) =>
+            typeof TarsusStream.check_type(item, req)  != "function"
           );
           if (is_type_available) return data;
-          return [];
+          is_object_type(item)
         } else {
           let ret = data.map((el) => {
             let body = {

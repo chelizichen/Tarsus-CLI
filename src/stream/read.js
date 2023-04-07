@@ -14,12 +14,6 @@ var TarsusReadStream = function (struct, data) {
 
   // 拿到所有的keys
   this._struct_keys = TarsusStream.struct_map.keys();
-
-  // 生成一份拷贝数据
-  this._struct_data = TarsusStream.parse({
-    req: struct,
-    data: {},
-  });
 };
 
 TarsusReadStream.prototype.read_int = function (index) {
@@ -107,6 +101,8 @@ module.exports = { TarsusReadStream }
 // 比如 comm.taro 会自动生成一个名为 comm.js
 
 
+
+
 // TarsusStream('./comm.taro')
 
 
@@ -139,8 +135,29 @@ module.exports = { TarsusReadStream }
 //   }
 // };
 
+// class GetUserListReq {
+//   basic
+//   ids
+//   constructor(...args) {
+//     const _TarsusReadStream = new TarsusReadStream("GetUserListReq", args);
+//     this.basic = _TarsusReadStream.read_struct(1, "Basic");
+//     this.ids = _TarsusReadStream.read_list(2, "List<int>");
+//   }
+// }
+
+// class Basic {
+//   token;
+//   constructor(...args) {
+//     const _TarsusReadStream = new TarsusReadStream("Basic", args);
+//     this.token = _TarsusReadStream.read_string(1);
+//   }
+// }
+
 // TarsusStream.define_struct(GetUserByIdRes)
 // TarsusStream.define_struct(User)
+// TarsusStream.define_struct(GetUserListReq)
+// TarsusStream.define_struct(Basic)
+
 
 // function getArgs(obj) {
 //   let arr = Object.values(obj).map((el) => {
@@ -164,9 +181,20 @@ module.exports = { TarsusReadStream }
 //     address: "address"
 //   }
 // }
+// const GetUserListReqData = [
+//   [ '12312312asdas' ],
+//   [
+//     1, 2, 3, 4,  5,
+//     6, 7, 8, 9, '测试'
+//   ]
+// ]
 
 // const data = getArgs(obj)
-
+// const data1 = getArgs(GetUserListReqData)
+// const GetUserByIdReqData1 = new GetUserListReq(...data1)
+// console.log(GetUserByIdReqData1);
 // const getUserByIdRes = new GetUserByIdRes(...data)
 // console.log(getUserByIdRes);
+
+
 
