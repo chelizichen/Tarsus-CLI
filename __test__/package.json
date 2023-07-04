@@ -1,0 +1,50 @@
+{
+  "name": "ex-vue3-webpack",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently -k \"npm run dev:client\" \"npm run dev:server\"",
+    "dev:client": "webpack serve --mode development --config ./config/webpack.config.js",
+    "dev:server": "ts-node-dev --project tsconfig.server.json ./src/app.ts --watch  --ignore src/assets ",
+    "build": "concurrently -k \"npm run build:server\"   \"npm run build:client\"",
+    "build:client": "webpack --mode production --config ./config/webpack.config.js ",
+    "build:server": "tsc --project tsconfig.server.json",
+    "start": "node dist/app.js",
+    "debug:dev": "up-script run dev",
+    "debug:prod":"up-script run prod",
+    "debug:start":"up-script run start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.4.0",
+    "core-js": "^3.31.0",
+    "express": "^4.18.2",
+    "pinia": "^2.1.4",
+    "vue": "^3.2.36",
+    "vue-router": "^4.2.2"
+  },
+  "devDependencies": {
+    "@vue/compiler-sfc": "^3.2.36",
+    "@babel/preset-typescript": "^7.22.5",
+    "typescript": "^5.1.6",
+    "vue-loader": "^17.0.1",
+    "less-loader": "^11.1.3",
+    "nodemon": "^2.0.22",
+    "postcss-loader": "^7.3.3",
+    "postcss-preset-env": "^8.5.1",
+    "sass": "^1.63.6",
+    "sass-loader": "^13.3.2",
+    "style-loader": "^3.3.3",
+    "ts-loader": "^9.4.4"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "Android >= 4.4",
+    "iOS >=5"
+  ]
+}

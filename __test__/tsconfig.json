@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2015",
+    "declaration": true,
+    "module": "ESNext",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "moduleResolution": "Node",
+    "sourceMap": false,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "noEmit": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": false, // false
+    "noImplicitReturns": true,
+    "allowJs": true,
+    "isolatedModules": false,
+    "skipLibCheck": false,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "experimentalDecorators": true,
+    "paths": {
+      "@": ["./src/client"],
+      "@/*": ["./src/client/*"],
+    },
+    "outDir":"./public/assets"
+  },
+  "exclude": ["./src/*.ts","./src/router/*.ts"],
+  "include": ["./src/client"]
+}
