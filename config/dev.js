@@ -47,7 +47,7 @@ module.exports = {
         port: "3419",
     },
     plugins: [
-        new ForkTsCheckerWebapckPlugin()
+        // new ForkTsCheckerWebapckPlugin() // 暂时不需要这个 由于部分原因
     ],
     module: {
         rules: [
