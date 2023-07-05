@@ -4,9 +4,9 @@ const { merge } = require('webpack-merge') // 获取merge函数
 const Config = require('webpack-chain')
 const webpack = require('webpack');
 const express = require('express')
-
+const { cwd } = require("process")
 function resolve(...args) {
-    return path.resolve(cwd, ...args)
+    return path.resolve(cwd(), ...args)
 }
 
 const commonConfig = require("../../config/config")
@@ -15,7 +15,7 @@ const { getDevServerOptions } = require("../../lib/dev")
 // 专门处理Web的目录
 const tarsusConfig = require(resolve("tarsus.config.js")).web;
 
-function loadWebpackDev(app){
+function loadWebpackDev(app) {
     const clientConfig = new Config();
     const baseConfig = commonConfig("development"); // 基础配置
     const devConfig = getDevServerOptions(tarsusConfig)

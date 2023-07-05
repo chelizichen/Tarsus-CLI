@@ -1,6 +1,6 @@
 {
   "name": "tarsus-cli",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "",
   "main": "src/index.js",
   "repository": {
@@ -32,9 +32,7 @@
     "fs-extra": "^11.1.0",
     "inquirer": "^7.1.4",
     "execa": "^6.1.0",
-    "express": "^4.18.2"
-  },
-  "devDependencies": {
+    "express": "^4.18.2",
     "@babel/core": "^7.22.5",
     "@babel/preset-env": "^7.22.5",
     "@babel/preset-typescript": "^7.22.5",
@@ -42,7 +40,6 @@
     "@types/node": "^20.3.3",
     "@vue/compiler-sfc": "^3.3.4",
     "babel-loader": "^9.1.2",
-    "commander": "^11.0.0",
     "concurrently": "^8.2.0",
     "css-loader": "^6.8.1",
     "fork-ts-checker-webpack-plugin": "^8.0.0",
