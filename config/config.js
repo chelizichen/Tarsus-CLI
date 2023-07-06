@@ -18,7 +18,7 @@ const StyleRules = [
     {
         test: /\.s[ac]ss$/i,
         use: ['style-loader', 'css-loader', 'sass-loader'],
-        include: [resolve('src', 'client')]
+        // include: [resolve('src', 'client')]
     },
     {
         test: /\.css$/, // 匹配css文件
@@ -39,7 +39,7 @@ const StyleRules = [
                 },
             },
         ],
-        include: [resolve('src', 'client')]
+        // include: [resolve('src', 'client')]
     },
     {
         test: /\.less$/,
@@ -61,7 +61,7 @@ const StyleRules = [
             },
             'less-loader'
         ],
-        include: [resolve('src', 'client')]
+        // include: [resolve('src', 'client')]
     }
 ]
 
