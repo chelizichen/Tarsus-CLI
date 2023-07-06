@@ -91,6 +91,12 @@ const commonConfig = {
                     }
                 }
             },
+            {
+                test: /\.(png|jpg|jpeg|gif)$/,
+                use: {
+                    loader: 'file-loader'
+                }
+            },
         ].concat(StyleRules)
     },
     plugins: [
