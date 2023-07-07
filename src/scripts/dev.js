@@ -16,6 +16,13 @@ const { getDevServerOptions } = require("../../lib/dev")
 const tarsusConfig = require(resolve("tarsus.config.js")).web;
 
 function loadWebpackDev(app) {
+    let isNext = undefined;
+    isNext = checkVersion()
+    
+    if (isNext !== true) {
+        throw new  Error(isNext)
+    }
+
     const clientConfig = new Config();
     const baseConfig = commonConfig("development"); // 基础配置
     const devConfig = getDevServerOptions(tarsusConfig)
@@ -39,6 +46,21 @@ function loadWebpackDev(app) {
     );
 }
 
+// 检查vue 与对应插件是否一致
+function checkVersion() {
+    const currentProjectPkg = require(resolve('package.json'))
+    const cliPkg = require('../../package.json')
+
+    const projectVueVersion = currentProjectPkg.dependencies.vue
+    const cliSfcVersion = cliPkg.dependencies['@vue/compiler-sfc']
+    if (projectVueVersion == cliSfcVersion) {
+        return true
+    }
+    // 抛出错误
+    return (`VersionError :: vue.version(${projectVueVersion}) != cli.@vue/compiler-sfc.version(${cliSfcVersion})`)
+
+
+}
 
 module.exports = {
     loadWebpackDev
