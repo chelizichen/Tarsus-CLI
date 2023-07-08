@@ -16,7 +16,7 @@ const { TaroError } = require("./err")
  * **********************************************
  */
 
-var TarsusStream = function (url) {
+var TarsusStream = function (url,options) {
 
   this.readStruct = TarsusStream.prototype.readStruct.bind(this)
   this._read_struct_ = TarsusStream.prototype._read_struct_.bind(this)
@@ -30,7 +30,16 @@ var TarsusStream = function (url) {
   // 自定义的结构体类型
   TarsusStream.define_structs = {}
 
-  this._stream = readFileSync(url, "utf-8")
+  // 判断是不是webpack
+  let _stream_data = undefined;
+  if(options.isLoader){
+    _stream_data = url; // 是loader 直接使用文件
+  }else{
+    _stream_data = readFileSync(url,"utf-8")
+
+  }
+
+  this._stream = _stream_data
     .trim()
     .replace(/\/\/.*/g, "")
     .replace(/\/\*[\s\S]*?\*\//g, "")
