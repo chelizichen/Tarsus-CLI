@@ -97,12 +97,17 @@ const commonConfig = {
                     loader: 'file-loader'
                 }
             },
+            {
+                test: /\.taro$/,
+                use: {
+                    loader: 'tarsus-loader'
+                }
+            }
         ].concat(StyleRules)
     },
     plugins: [
         new VueLoaderPlugin(),
         new HtmlWebpackPlugin({
-            title: 'Demo',
             template: resolve('public', 'index.html')
         }),
     ],
@@ -129,13 +134,13 @@ const commonConfig = {
     output: {
         path: resolve('public', 'assets'),
         filename: 'bundle.js',
-        publicPath: '/tgoperate/' // 公共路径 这个是其他文件地址的路径
+        publicPath: '/tarsus/' // 公共路径 这个是其他文件地址的路径
     },
     entry: {
         vueApp: resolve('src', 'client', 'main.ts')
     },
     resolve: {
-        extensions: [".ts", ".js",],
+        extensions: [".ts", ".js",".taro"],
         alias: {
             '@': resolve('src', 'client'),// 这样配置后 @ 可以指向 src 目录
             'vue$':resolve('node_modules','vue','index.js'),
