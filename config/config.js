@@ -97,12 +97,12 @@ const commonConfig = {
                     loader: 'file-loader'
                 }
             },
-            {
-                test: /\.taro$/,
-                use: {
-                    loader: 'tarsus-loader'
-                }
-            }
+            // {
+            //     test: /\.taro$/,
+            //     use: {
+            //         loader: 'tarsus-loader'
+            //     }
+            // }
         ].concat(StyleRules)
     },
     plugins: [
