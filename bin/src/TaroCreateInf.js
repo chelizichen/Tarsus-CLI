@@ -1,5 +1,5 @@
 const { writeFileSync } = require("fs");
-const { TarsusStream } = require("../../src");
+const { TarsusStream } = require("../../src/stream/index");
 
 var TaroCreateInf = function (type, taro_file_path, option) {
   let tarsusstream = new TarsusStream(taro_file_path);

@@ -21,9 +21,9 @@ var TarsusStream = function (url,options) {
   this.readStruct = TarsusStream.prototype.readStruct.bind(this)
   this._read_struct_ = TarsusStream.prototype._read_struct_.bind(this)
 
-
-
-  TarsusStream.struct_map = new Map();
+  if(!TarsusStream.struct_map){
+    TarsusStream.struct_map = new Map();
+  }
   TarsusStream.base_struct = ["int", "string", "bool"];
   TarsusStream.object_struct = ["List", "Set"];
 
@@ -66,7 +66,6 @@ var TarsusStream = function (url,options) {
 
   this._data.pop();
 
-  console.log(this._struct_name);
 
   this.readStruct();
 
