@@ -32,7 +32,7 @@ var TarsusStream = function (url,options) {
 
   // 判断是不是webpack
   let _stream_data = undefined;
-  if(options.isLoader){
+  if(options && options.isLoader){
     _stream_data = url; // 是loader 直接使用文件
   }else{
     _stream_data = readFileSync(url,"utf-8")
