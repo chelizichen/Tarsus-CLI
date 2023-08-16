@@ -1,6 +1,6 @@
 {
   "name": "tarsus-cli",
-  "version": "1.2.2",
+  "version": "1.2.94",
   "description": "",
   "main": "src/index.js",
   "repository": {
@@ -12,9 +12,13 @@
     "tarsus": "bin/tarsus.js"
   },
   "exports": {
-    ".": {
-      "require": "./src/index.js",
-      "import": "./src/index.js"
+    "./taro": {
+      "require": "./taro.js",
+      "import": "./taro.js"
+    },
+    "./web": {
+      "require": "./web.js",
+      "import": "./web.js"
     }
   },
   "keywords": [
@@ -27,6 +31,8 @@
   "author": "chelizichen",
   "license": "ISC",
   "dependencies": {
+  },
+  "devDependencies": {
     "chalk": "^4.1.2",
     "commander": "^9.4.1",
     "fs-extra": "^11.1.0",
