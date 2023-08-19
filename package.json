@@ -1,6 +1,6 @@
 {
   "name": "tarsus-cli",
-  "version": "1.2.94",
+  "version": "1.2.95",
   "description": "",
   "main": "src/index.js",
   "repository": {
@@ -30,8 +30,7 @@
   },
   "author": "chelizichen",
   "license": "ISC",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "chalk": "^4.1.2",
     "commander": "^9.4.1",

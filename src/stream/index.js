@@ -45,6 +45,25 @@ var TarsusStream = function (url,options) {
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .replace(/\s+/g, " ");
 
+  const java_struct_package = /java_struct_package(.*?);/;
+  const java_inf_package = /java_inf_package(.*?);/;
+  const javaStructMatch = this._stream.match(java_struct_package);
+  const javaInfMatch = this._stream.match(java_inf_package);
+
+  const JavaConfig = {
+    struct: javaStructMatch ? javaStructMatch[1] : undefined,
+    inf: javaInfMatch ? javaInfMatch[1] : undefined,
+  };
+
+  if(JavaConfig.struct){
+    JavaConfig.struct = JavaConfig.struct.replace("=","").trimStart()
+  }
+  if(JavaConfig.inf){
+    JavaConfig.inf = JavaConfig.inf.replace("=","").trimStart()
+  }
+
+  this.JavaConfig = JavaConfig;
+
   let spl = this._stream.split("interface")
   this._struct_stream = spl[0];
   this._interface_stream = "interface" + spl[1]
@@ -69,8 +88,6 @@ var TarsusStream = function (url,options) {
 
   this.readStruct();
 
-  // 添加 interFace 支持
-  // 计划添加
   let interFace_body_reg = /interface(.*?)};/
   let interFace_body = interFace_body_reg.exec(this._interface_stream)
   if (interFace_body) {

@@ -14,7 +14,10 @@ var TaroCreateInf = function (type, taro_file_path, option) {
       interFace_Name.trim() + ".java"
     );
     console.log(newF);
-    let render = ` package ${option.package};
+    let render = ` 
+    package ${tarsusstream.JavaConfig.inf};
+    import ${tarsusstream.JavaConfig.struct};
+
   public interface ${interFace_Name}{
     ${data.javaCode}
   }`;
@@ -60,7 +63,7 @@ TaroCreateInf.createInf = function (arr) {
   for (let i = 0; i < interfaces.length; i++) {
     let interfaceObj = interfaces[i];
     // javaCode += `public ${interfaceObj.returnType} ${interfaceObj.methodName}(${interfaceObj.requestType} req, ${interfaceObj.responseType} res) {\n\t// Implementation\n}\n`;
-    javaCode += `public ${interfaceObj.returnType} ${interfaceObj.methodName}(${interfaceObj.requestType} req, ${interfaceObj.responseType} res);\n`;
+    javaCode += `public ${interfaceObj.responseType} ${interfaceObj.methodName}(${interfaceObj.requestType} req, ${interfaceObj.responseType} res);\n`;
   }
 
   // Generate Node.js code

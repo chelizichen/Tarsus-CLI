@@ -20,7 +20,7 @@
 const program = require("commander")
 const fs = require('fs');
 const path  = require("path");
-const { TarsusStream } = require("../src");
+const { TarsusStream } = require("../taro");
 const { TaroCreateObject } = require("./src/TaroCreateObj");
 const { TaroCreateInf } = require("./src/TaroCreateInf");
 
@@ -40,14 +40,12 @@ program
   .command("to <type> <file>")
   .option('-p, --package [value]',"set the package url")
   .description("-- compile *.taro")
-  .action(function (type, file, option) {
-    if (type == "java" && !option.package) {
-      throw new Error(" missing [-p] when use taro to java *.taro ")
-    }
+  .action(function (type, file) {
+
     let cwd = process.cwd()
     let taro_file_path = path.resolve(cwd,file)
     new TarsusStream(taro_file_path)
-    TaroCreateObject(type,taro_file_path,option)
+    TaroCreateObject(type,taro_file_path)
   });
   
 
@@ -57,9 +55,6 @@ program
   .option('-p, --package [value]',"set the package url")
   .description("-- compile *.taro")
   .action(function (type, file, option) {
-    if (type == "java" && !option.package) {
-      throw new Error(" missing [-p] when use taro to java *.taro ")
-    }
     let cwd = process.cwd()
     let taro_file_path = path.resolve(cwd,file)
     option.file = file.split("./")[1]
