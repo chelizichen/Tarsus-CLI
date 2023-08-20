@@ -9,7 +9,7 @@ var TaroCreateObject = function (type, taro_file_path, option) {
         case "ts": {
             let StructToFile = "";
             // 添加依赖
-            StructToFile += `const { TarsusReadStream } = require("tarsus-cli");\n`;
+            StructToFile += `const { TarsusReadStream } = require("tarsus-cli/taro");\n`;
 
             // 每一个 类型进行设置
             TarsusStream.struct_map.forEach((value, key) => {

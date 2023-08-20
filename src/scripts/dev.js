@@ -49,10 +49,8 @@ function loadWebpackDev(app) {
 // 检查vue 与对应插件是否一致
 function checkVersion() {
     const currentProjectPkg = require(resolve('package.json'))
-    const cliPkg = require('../../package.json')
-
     const projectVueVersion = currentProjectPkg.dependencies.vue
-    const cliSfcVersion = cliPkg.dependencies['@vue/compiler-sfc']
+    const cliSfcVersion = currentProjectPkg.dependencies['@vue/compiler-sfc'] || currentProjectPkg.devDependencies['@vue/compiler-sfc']
     if (projectVueVersion == cliSfcVersion) {
         return true
     }
