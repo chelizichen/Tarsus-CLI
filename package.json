@@ -1,6 +1,6 @@
 {
   "name": "tarsus-cli",
-  "version": "1.2.97",
+  "version": "1.2.98",
   "description": "",
   "main": "src/index.js",
   "repository": {

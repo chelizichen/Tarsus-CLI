@@ -53,7 +53,31 @@ var TaroCreateObject = function (type, taro_file_path, option) {
             fs.writeFileSync(toWriteFilePath, StructToFile);
             break;
         }
+        case "ts-dto":{
+            let StructToFile = "";
+            // 添加依赖
 
+            // 每一个 类型进行设置
+            TarsusStream.struct_map.forEach((value, key) => {
+                StructToFile += `export class ${key}{ \n`;
+                // 先 确定成员变量给
+                value.forEach((item) => {
+                    let ts_type = item.type.replace("int", "number").replace("List<", "Array<");
+
+                    // item.type = item.type.replace("int", "number");
+                    // if (item.type.startsWith("List")) {
+                    //   item.type = item.type.replace("List", "Array");
+                    // }
+                    StructToFile += " public " + item.param + " : " + ts_type + ";\n";
+
+                });
+
+                StructToFile += "};\n";
+            });
+            let toWriteFilePath = taro_file_path.replace(".taro", "DTO.ts");
+            fs.writeFileSync(toWriteFilePath, StructToFile);
+            break;
+        }
         case "java": {
             let package = option.package;
 
