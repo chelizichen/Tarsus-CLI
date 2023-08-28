@@ -79,14 +79,17 @@ var TaroCreateObject = function (type, taro_file_path, option) {
             break;
         }
         case "java": {
-            let package = option.package;
-
-            TarsusStream.struct_map.forEach((value, key) => {
-                let render = TaroCreateObject.Java.render(key, value, package);
-
-                let getPath = TaroCreateObject.GetFilePath(key + ".java");
-
+            if(option.struct){
+                const struct = TarsusStream.struct_map.get(option.struct)
+                let render = TaroCreateObject.Java.render(option.struct, struct);
+                let getPath = TaroCreateObject.GetFilePath(option.struct + ".java");
                 fs.writeFileSync(getPath, render);
+                return;
+            }
+            TarsusStream.struct_map.forEach((value, key) => {
+                let render = TaroCreateObject.Java.render(key, value);
+                let getPath = TaroCreateObject.GetFilePath(key + ".java");
+                fs.writeFileSync(getPath, render);   
             });
             break;
         }
@@ -153,9 +156,9 @@ TaroCreateObject.Java.render = function (key, value, package) {
 
     let render = `
 package ${package};
-import com.tarsus.example.decorator.TaroStruct;
-import com.tarsus.example.base.inf.TarsusJson;
-import com.tarsus.example.base.TarsusStream;
+import com.tarsus.lib.lib_decorator.struct.TaroStruct;
+import com.tarsus.lib.main_control.load_server.TarsusJsonInf;
+import com.tarsus.lib.main_control.load_server.impl.TarsusStream;
 import com.alibaba.fastjson.JSON;
 import java.util.HashMap;
 import java.util.List;
@@ -165,7 +168,7 @@ import com.alibaba.fastjson.JSONObject;
 ${IMPORTS}
 
 @TaroStruct
-public class ${key} implements TarsusJson{
+public class ${key} implements TarsusJsonInf{
   ${PARAMS}
 
   // ListConstructor
