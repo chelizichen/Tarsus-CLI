@@ -1,12 +1,17 @@
 const { writeFileSync } = require("fs");
 const { TarsusStream } = require("../../src/stream/index");
 
+
 var TaroCreateInf = function (type, taro_file_path, option) {
   let tarsusstream = new TarsusStream(taro_file_path);
   let interFace = tarsusstream._interFace;
   let interFace_Name = tarsusstream._interFace_name;
 
   let data = TaroCreateInf.createInf(interFace);
+  console.log('interface',interFace);
+  if(type == "go"){
+    compileInterface(interFace)
+  }
   // console.log(interFace_Name);
   if (type == "java") {
     let newF = taro_file_path.replace(
@@ -77,6 +82,25 @@ TaroCreateInf.createInf = function (arr) {
   }
   return { javaCode: javaCode, nodejsCode: nodejsCode };
 };
+
+function compileInterface(methods) {
+  let goCode = 'package main\n\n';
+
+  goCode += 'type ServiceInterface interface {\n';
+  for (const method of methods) {
+      const matches = method.match(/(\w+) \(Request : (\w+), Response : (\w+)\)/);
+      if (matches) {
+          const methodName = matches[1];
+          const requestType = matches[2];
+          const responseType = matches[3];
+          goCode += `    ${methodName}(req ${requestType}, res *${responseType}) (int, error)\n`;
+      }
+  }
+  goCode += '}\n';
+
+  writeFileSync('interface.go', goCode);
+}
+
 
 module.exports = {
   TaroCreateInf,

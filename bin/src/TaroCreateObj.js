@@ -4,6 +4,7 @@ const fs = require("fs");
 
 const {TarsusStream} = require("../../src/stream/index");
 
+
 var TaroCreateObject = function (type, taro_file_path, option) {
     switch (type) {
         case "ts": {
@@ -91,6 +92,12 @@ var TaroCreateObject = function (type, taro_file_path, option) {
                 let getPath = TaroCreateObject.GetFilePath(key + ".java");
                 fs.writeFileSync(getPath, render);   
             });
+            break;
+        }
+        case "go":{
+            const fileName = taro_file_path.substring(taro_file_path.lastIndexOf("/")+1).replace(".taro",".go")
+            const struct_map = TarsusStream.struct_map
+            compile(struct_map,fileName)
             break;
         }
     }
@@ -248,6 +255,39 @@ TaroCreateObject.Java.SetImport = function (value) {
 
 
 }
+
+
+
+function typeMapper(jsType) {
+    // 基础类型 后续做改变
+    if(['int','string','bool'].includes(jsType)){
+        return jsType
+    }else  if (jsType.startsWith('List<')) {
+        const innerType = jsType.slice(5, -1);
+        return `[]${typeMapper(innerType)}`;
+    }else{
+        return jsType
+    }
+}
+
+function compile(dataMap,fileName) {
+    let goCode = `package ${fileName.replace(".go","")}\n\n`;
+
+    for (const [structName, fields] of dataMap.entries()) {
+        goCode += `type ${structName} struct {\n`;
+        for (const field of fields) {
+            const goType = typeMapper(field.type);
+            const fieldName = field.param.charAt(0).toUpperCase() + field.param.slice(1); // Convert to PascalCase
+            goCode += `    ${fieldName} ${goType} \`json:"${field.param}"\`\n`;
+        }
+        goCode += '}\n\n';
+    }
+
+    fs.writeFileSync(fileName, goCode);
+}
+
+
+
 
 module.exports = {
     TaroCreateObject,
