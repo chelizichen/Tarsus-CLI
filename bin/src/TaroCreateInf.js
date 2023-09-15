@@ -3,42 +3,20 @@ const { TarsusStream } = require("../../src/stream/index");
 
 
 var TaroCreateInf = function (type, taro_file_path, option) {
-  let tarsusstream = new TarsusStream(taro_file_path);
-  let interFace = tarsusstream._interFace;
-  let interFace_Name = tarsusstream._interFace_name;
-
-  let data = TaroCreateInf.createInf(interFace);
-  console.log('interface',interFace);
+  const tarsusstream    = new TarsusStream(taro_file_path);
+  const interFace       = tarsusstream._interFace;
+  const interFace_Name  = tarsusstream._interFace_name;
+  const data            = TaroCreateInf.createInf(interFace);
+  const context         = {taro_file_path,option,interFace_Name,tarsusstream,data}
   if(type == "go"){
-    compileInterface(interFace)
+    TaroCreateInf.compile2GoInterface(interFace)
   }
   // console.log(interFace_Name);
   if (type == "java") {
-    let newF = taro_file_path.replace(
-      option.file,
-      interFace_Name.trim() + ".java"
-    );
-    console.log(newF);
-    let render = ` 
-    package ${tarsusstream.JavaConfig.inf};
-    import ${tarsusstream.JavaConfig.struct};
-
-  public interface ${interFace_Name}{
-    ${data.javaCode}
-  }`;
-    writeFileSync(newF, render, "utf-8");
+    TaroCreateInf.compile2JavaInterface(context)
   }
   if(type == "ts"){
-    let newF = taro_file_path.replace(
-      option.file,
-      interFace_Name.trim() + ".ts"
-    );
-    console.log(newF);
-    let render = `
-interface ${interFace_Name}{
-    ${data.nodejsCode}
-  }`;
-    writeFileSync(newF, render, "utf-8");
+    TaroCreateInf.compile2TypeScriptInterface(context)
   }
 };
 
@@ -83,7 +61,7 @@ TaroCreateInf.createInf = function (arr) {
   return { javaCode: javaCode, nodejsCode: nodejsCode };
 };
 
-function compileInterface(methods) {
+TaroCreateInf.compile2GoInterface = function(methods) {
   let goCode = 'package main\n\n';
 
   goCode += 'type ServiceInterface interface {\n';
@@ -100,7 +78,47 @@ function compileInterface(methods) {
 
   writeFileSync('interface.go', goCode);
 }
+TaroCreateInf.compile2JavaInterface = function(context) {
+  const {
+    taro_file_path,
+    option,
+    interFace_Name,
+    tarsusstream,data
+  }             = context
+  const newF    = taro_file_path.replace(
+    option.file,
+    interFace_Name.trim() + ".java"
+  );
+  console.log(newF);
+  const render  = ` 
+        package ${tarsusstream.JavaConfig.inf};
+        import ${tarsusstream.JavaConfig.struct};
 
+        public interface ${interFace_Name}{
+          ${data.javaCode}
+        }
+`;
+  writeFileSync(newF, render, "utf-8");
+}
+TaroCreateInf.compile2TypeScriptInterface = function(context){
+  const {
+    taro_file_path,
+    option,
+    interFace_Name,
+    data
+  }             = context
+  const newF    = taro_file_path.replace(
+    option.file,
+    interFace_Name.trim() + ".ts"
+  );
+  console.log(newF);
+  const render  = `
+        interface ${interFace_Name}{
+          ${data.nodejsCode}
+        }
+`;
+  writeFileSync(newF, render, "utf-8");
+}
 
 module.exports = {
   TaroCreateInf,
