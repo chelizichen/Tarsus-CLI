@@ -7,11 +7,10 @@ var TaroCreateInf = function (type, taro_file_path, option) {
   const interFace       = tarsusstream._interFace;
   const interFace_Name  = tarsusstream._interFace_name;
   const data            = TaroCreateInf.createInf(interFace);
-  const context         = {taro_file_path,option,interFace_Name,tarsusstream,data}
+  const context         = {taro_file_path,option,interFace_Name,tarsusstream,data,interFace}
   if(type == "go"){
-    TaroCreateInf.compile2GoInterface(interFace)
+    TaroCreateInf.compile2GoInterface(context)
   }
-  // console.log(interFace_Name);
   if (type == "java") {
     TaroCreateInf.compile2JavaInterface(context)
   }
@@ -61,29 +60,31 @@ TaroCreateInf.createInf = function (arr) {
   return { javaCode: javaCode, nodejsCode: nodejsCode };
 };
 
-TaroCreateInf.compile2GoInterface = function(methods) {
-  let goCode = 'package main\n\n';
+TaroCreateInf.compile2GoInterface = function(context) {
+  const{interFace_Name,interFace} = context
+  let goCode = `package ${interFace_Name}\n\n`;
 
-  goCode += 'type ServiceInterface interface {\n';
-  for (const method of methods) {
-      const matches = method.match(/(\w+) \(Request : (\w+), Response : (\w+)\)/);
+  goCode += `type ${interFace_Name} interface {\n`;
+  for (const method of interFace) {
+      const matches           = method.match(/(\w+) \(Request : (\w+), Response : (\w+)\)/);
       if (matches) {
-          const methodName = matches[1];
-          const requestType = matches[2];
-          const responseType = matches[3];
-          goCode += `    ${methodName}(req ${requestType}, res *${responseType}) (int, error)\n`;
+          const methodName    = matches[1];
+          const requestType   = matches[2];
+          const responseType  = matches[3];
+          goCode              += `    ${methodName}(req ${requestType}, res *${responseType}) (int, error)\n`;
       }
   }
-  goCode += '}\n';
+  goCode                      += '}\n';
 
-  writeFileSync('interface.go', goCode);
+  writeFileSync(`${interFace_Name}.go`, goCode);
 }
 TaroCreateInf.compile2JavaInterface = function(context) {
   const {
     taro_file_path,
     option,
     interFace_Name,
-    tarsusstream,data
+    tarsusstream,
+    data
   }             = context
   const newF    = taro_file_path.replace(
     option.file,
