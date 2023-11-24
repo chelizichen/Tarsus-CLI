@@ -74,3 +74,8 @@ struct TestParams  {
 
 
 ````
+
+````cmd
+# 直接创建模版项目
+tarsus init 
+````
