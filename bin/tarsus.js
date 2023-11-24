@@ -1,7 +1,6 @@
 #!/usr/bin/env ts-node
 
 const program = require("commander")
-// const resolve = require('path').resolve
 const cwd = require('process').cwd()
 const path = require('path')
 
@@ -13,23 +12,21 @@ const Config = require('webpack-chain')
 const { merge } = require('webpack-merge') // 获取merge函数
 const webpack = require('webpack');
 const express = require('express')
-const { spawnSync, spawn, exec } = require("child_process")
+const {  spawn, exec } = require("child_process")
 const { mkdirSync } = require("fs")
-
-const app = require(resolve("src", "app.ts"));
-
+const fse = require('fs-extra')
 
 program.version("1.0.0")
     .command("run <args>")
     .option("-r,--release", "prod is release")
-    .description("tarsus run command [dev,build,start]")
+    .description("tarsus run command [dev,build,start,init]")
     .action(async function (args, opt) {
         const commonConfig = require("../config/config")
         // 专门处理Web的目录
-        const tarsusConfig = require(resolve("tarsus.config.js")).web;
         
         // 走生产打包
         if (args == "prod") {
+            const tarsusConfig = require(resolve("tarsus.config.js")).web;
             const fse = require('fs-extra');
             fse.removeSync(resolve("dist"))
             fse.removeSync(resolve("public", "assets"))
@@ -128,6 +125,7 @@ program.version("1.0.0")
         }
         // 走运行时
         if (args == "start") {
+            const tarsusConfig = require(resolve("tarsus.config.js")).web;
             const requireEntryFile = require(resolve('dist', 'app.js'));
             const port = tarsusConfig.port
             const publicPath = tarsusConfig.publicPath
@@ -138,6 +136,15 @@ program.version("1.0.0")
                 console.log(`Express server is running on localhost:${port}`);
             })
 
+        }
+
+        // 初始化项目
+        if(args == "init"){
+            console.log("**** init tarsus project 开始 ****");
+            const initTemplate = path.resolve(__dirname,"../__template__")
+            const target = resolve()
+            fse.copySync(initTemplate,target)
+            console.log("**** init tarsus project 结束 ****");
         }
 
     })
